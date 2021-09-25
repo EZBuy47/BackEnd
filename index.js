@@ -56,12 +56,7 @@ MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?r
             console.log(result);
             res.send(result);
           });
-        app.get('/usuario',(req, res)=>{
-          db.collection("users").findOne({name:"Daniel"})
-          if(error) throw error;
-          console.log(result);
-          res.send(result);
-        });
+        
           })
 
       
