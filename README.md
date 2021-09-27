@@ -1,6 +1,6 @@
 # BackEND
 
-Grupo Conformado por:
+## Grupo Conformado por:
 
 Kevin Leonardo Alvarez Mora 1010228053 klalvarezm@gmail.com
 
@@ -13,7 +13,7 @@ Jhonatan Alexander Castillo Perez C.C. 1031156294 jacastillop@unal.edu.co
 Tays Gutierrez 1031169475 taysgutierrezc@gmail.com
 
 
-BackEnd Desarrollado en NodeJS 
+## BackEnd Desarrollado en NodeJS 
 
 para Misión Tic 2021
 
