@@ -81,6 +81,14 @@ MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?r
         db.collection("users").findOneAndUpdate(
           {email:req.body.email},
           {$set:{
+            name:req.body.name,
+            identification:req.body.identification,
+            cellphone:req.body.cellphone,
+            password:req.body.password,
+            addedDate:req.body.addedDate,
+            speciality:req.body.speciality,
+            role:req.body.role,
+            lastLoginDate:req.body.lastLoginDate,
           cellphone:req.body.cellphone,
           speciality:req.body.speciality
         }}).then(result =>{
