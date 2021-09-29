@@ -6,7 +6,6 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const MongoClient = require('mongodb').MongoClient;
 const saltRounds=10;
-
 app.use(cors());
 app.use(express.json());
 app.listen(3001,()=>{
@@ -16,10 +15,10 @@ app.listen(3001,()=>{
 
 
 // CONEXION BASE DE DATOS
+// ESPACIO CRUD DE USERS
 MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?retryWrites=true&w=majority'
 ,{ useUnifiedTopology: true }).then(client=>{
 
-    console.log('Bienvenido a database mongo');
     const db = client.db('ezbuy-database');
     const usersCollection = db.collection('users');
    
@@ -64,6 +63,18 @@ MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?r
             res.send(result);
           });
 
+           //Retorna un solo producto dada una id
+        app.get('/usersbyemail/:email', (req, res) => {
+          const email=req.params.email;
+          console.log(email)
+          db.collection('users').findOne({email},function(err, result) {
+            if (err) throw err;
+            console.log(result);
+            res.send(result);
+          });
+        })
+
+
        /*Actualiza usuarios*/
        app.put('/updateuser',(req,res)=>{
         const email=req.body.email;
@@ -88,47 +99,104 @@ MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?r
             console.log("Borrado");
           }).catch(error => console.log(error))
        }) 
-
-
-
-
-        
-          })
-
-      
-
-
+  })
 }).catch(console.error)
 
 
 
-
-
-
-
-
-
-/*Registro de Usuarios*/ 
-/*app.post('/newuser',(req,res)=>{
-    const sqlCommand = 'INSERT INTO users (name,identification,email,password) VALUES (?,?,?,?)'
+//CRUD PRODUCTOS
+MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?retryWrites=true&w=majority'
+,{ useUnifiedTopology: true }).then(client=>{
+  const db = client.db('ezbuy-database');
+  const productCollection = db.collection('products');
+  
+  //Creacion Productos
+  app.post('/newproduct', (req, res) => {
     const userObject ={
-        
-     name: req.body.name,
-     identification:req.body.identification,
-     email:req.body.email,
-     password:req.body.password
-     
-    }
-    bcrypt.hash(userObject.password,saltRounds,(err,hash) => {
-        if(err){console.log(err)}
-        con.query(sqlCommand,[userObject.name,userObject.identification,userObject.email,hash],err =>{
-            if(err) throw err;
-            res.send('Usuario Creado');
-        });
-   
-    })
     
-});*/
+        name: req.body.name,
+        reference:req.body.reference,
+        price:req.body.price,
+        description:req.body.description,
+        cuantity:req.body.cuantity,
+        soldby:req.body.soldby,
+        boughtby:req.body.boughtby,
+        
+        
+       }
+      productCollection.insertOne(userObject)
+      .then(result => {
+        console.log(result);
+        console.log("Dato Añadido a mongo  ");
+        res.send('Producto Creado');
+      })
+      .catch(error => console.error(error))
+
+    })
+
+       /*Devuelve todos los productos creados*/
+        app.get('/allproducts', (req, res) => {
+          db.collection('products').find({}).toArray(function(err, result) {
+            if (err) throw err;
+            res.send(result);
+          });
+        })
+         //Retorna un solo producto dada una id
+        app.get('/productbyid/:id', (req, res) => {
+          const id=req.params.id;
+          var ObjectId = require('mongodb').ObjectId; 
+          var o_id = new ObjectId(id);
+          db.collection('products').findOne({_id:o_id},function(err, result) {
+            if (err) throw err;
+            res.send(result);
+          });
+        })
+
+        //Actualiza un productos
+        app.put('/updateproduct/:id',(req,res)=>{
+          const id=req.params.id;
+          var ObjectId = require('mongodb').ObjectId; 
+          var o_id = new ObjectId(id);
+          db.collection("products").findOneAndUpdate(
+            {_id:o_id},
+            {$set:{
+              name: req.body.name,
+              reference:req.body.reference,
+              price:req.body.price,
+              description:req.body.description,
+              cuantity:req.body.cuantity,
+              soldby:req.body.soldby,
+              boughtby:req.body.boughtby,
+          }}).then(result =>{
+            res.send('Update Exitoso');
+            console.log("Update Exitoso");
+  
+          }).catch(error => console.log(error));
+         });
+
+         //Borra un producto
+       app.delete('/deleteproduct/:id',(req,res)=>{
+        const id=req.params.id;
+        console.log(id);
+        var ObjectId = require('mongodb').ObjectId; 
+        var o_id = new ObjectId(id);
+        db.collection("products").findOneAndDelete({_id:o_id}
+          ).then(result =>{
+            res.send("Borrado Exitoso");
+            console.log("Borrado producto Exitoso");
+          }).catch(error => console.log(error))
+       }) 
+
+  }).catch(console.error)
+
+
+
+
+
+
+
+
+
 
 
 
