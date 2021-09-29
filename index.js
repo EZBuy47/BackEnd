@@ -88,9 +88,7 @@ MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?r
             addedDate:req.body.addedDate,
             speciality:req.body.speciality,
             role:req.body.role,
-            lastLoginDate:req.body.lastLoginDate,
-          cellphone:req.body.cellphone,
-          speciality:req.body.speciality
+            lastLoginDate:req.body.lastLoginDate
         }}).then(result =>{
           res.send('Update Exitoso');
           console.log("Update Exitoso");
