@@ -39,7 +39,8 @@ MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?r
             addedDate:req.body.addedDate,
             lastLoginDate:req.body.addedDate,
             role:req.body.role,
-            speciality:req.body.speciality
+            speciality:req.body.speciality,
+            state:req.body.state
            }
          ;
         bcrypt.hash(userObject.password,saltRounds,(err,hash) => {
@@ -64,10 +65,11 @@ MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?r
           });
 
            //Retorna un solo producto dada una id
-        app.get('/usersbyemail/:email', (req, res) => {
-          const email=req.params.email;
-          console.log(email)
-          db.collection('users').findOne({email},function(err, result) {
+        app.get('/usersbyid/:id', (req, res) => {
+          const id=req.params.id;
+          var ObjectId = require('mongodb').ObjectId; 
+          var o_id = new ObjectId(id);
+          db.collection('users').findOne({_id:o_id},function(err, result) {
             if (err) throw err;
             console.log(result);
             res.send(result);
@@ -76,18 +78,22 @@ MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?r
 
 
        /*Actualiza usuarios*/
-       app.put('/updateuser',(req,res)=>{
-        const email=req.body.email;
+       app.put('/updateuser/:id',(req,res)=>{
+        const id=req.params.id;
+        var ObjectId = require('mongodb').ObjectId; 
+        var o_id = new ObjectId(id);
         db.collection("users").findOneAndUpdate(
-          {email:req.body.email},
+          {_id:o_id},
           {$set:{
             name:req.body.name,
             identification:req.body.identification,
             cellphone:req.body.cellphone,
+            email:req.body.email,
             password:req.body.password,
             addedDate:req.body.addedDate,
             speciality:req.body.speciality,
             role:req.body.role,
+            state:req.body.state,
             lastLoginDate:req.body.lastLoginDate
         }}).then(result =>{
           res.send('Update Exitoso');
@@ -97,9 +103,11 @@ MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?r
        });
 
        /*Borra un usuario*/
-       app.delete('/deleteuser/:email',(req,res)=>{
-        const email=req.params.email;
-        db.collection("users").findOneAndDelete({email}
+       app.delete('/deleteuser/:id',(req,res)=>{
+        const id=req.params.id;
+        var ObjectId = require('mongodb').ObjectId; 
+        var o_id = new ObjectId(id);
+        db.collection("users").findOneAndDelete({_id:o_id}
           ).then(result =>{
             res.send("Borrado Exitoso");
             console.log("Borrado");
