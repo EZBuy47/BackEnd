@@ -6,11 +6,149 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const MongoClient = require('mongodb').MongoClient;
 const saltRounds=10;
+const session = require("express-session");
+const passport = require("passport");
+const passportLocalMongoose = require("passport-local-mongoose");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const findOrCreate = require("mongoose-findorcreate");
 app.use(cors());
 app.use(express.json());
 app.listen(3001,()=>{
     console.log("Welcome");
 });
+require("dotenv").config();
+
+app.use(session({
+  secret: "Our little secret.",
+  saveUninitialized: true,
+  resave: false,
+  duration: 30 * 60 * 1000,
+  activeDuration: 5 * 60 * 1000
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+mongoose.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/ezbuy-database?retryWrites=true&w=majority', {
+   useNewUrlParser: true, useUnifiedTopology: true });
+
+
+const userSchema = new mongoose.Schema ({
+  username: String,
+  name: String,
+  googleId: String,
+  secret: String,
+  name: String,
+  identification:Number,
+  email:String,
+  cellphone:Number,
+  addedDate:String,
+  lastLoginDate:String,
+  role:String,
+  speciality:String,
+  state:String,
+  alreadyRegistered:{type:Boolean, default:false}
+});
+userSchema.plugin(passportLocalMongoose);
+userSchema.plugin(findOrCreate);
+const User = new mongoose.model("User", userSchema);
+
+
+passport.use(User.createStrategy());
+passport.serializeUser(function(user, done) {
+  done(null, user.id);
+});
+passport.deserializeUser(function(id, done) {
+  User.findById(id, function(err, user) {
+    done(err, user);
+  });
+});
+passport.use(new GoogleStrategy({
+    clientID: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+    callbackURL: "http://localhost:3001/auth/google/callback",
+    userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
+  },
+  function(accessToken, refreshToken, profile, cb) {
+    User.findOrCreate({ googleId: profile.id, username: profile.id }, function (err, user) {
+      return cb(err, user);
+    });
+  }
+));
+
+
+app.get("/auth/google",
+  passport.authenticate("google", { scope: ["profile"] })
+);
+
+var currentUserId="";
+
+function setCurrentUserId(word){
+ currentUserId=word;
+ console.log("PRE TESTING:"+currentUserId);
+}
+
+app.get("/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "http://localhost:3000" }),
+  function(req, res) {
+    // Successful authentication, redirect secrets.
+    setCurrentUserId(req.user._id);
+      if(!req.user.alreadyRegistered)res.redirect(`http://localhost:3000/Register/${req.user._id}`);
+       res.redirect(`http://localhost:3000/DashBoard/${req.user._id}`);
+      
+    console.log("Exito")
+  });
+
+
+ app.get('/currentuserid',(req,res)=>{
+   res.send(currentUserId);
+   console.log("TEST:"+req.currentUserId);
+ })
+
+  app.get("/logout", function(req, res){
+    res.redirect("http://localhost:3000/");
+  });
+
+  app.put('/register/:id',(req,res)=>{
+        const id=req.params.id;
+        var ObjectId = require('mongodb').ObjectId; 
+        var o_id = new ObjectId(id);
+        User.findOneAndUpdate({_id:o_id}, 
+          {$set:{
+          name:req.body.name,
+          identification:req.body.identification,
+          cellphone:req.body.cellphone,
+          email:req.body.email,
+          addedDate:req.body.addedDate,
+          speciality:req.body.speciality,
+          role:req.body.role,
+          state:req.body.state,
+          lastLoginDate:req.body.lastLoginDate,
+          alreadyRegistered:true
+      }}).then(result =>{
+        res.send('Update Exitoso');
+        console.log("Registro Exitoso");
+        console.log(result)
+      }).catch(error => console.log(error));
+    
+     
+  })
+   
+  app.get('/usersbyid/:id', (req, res) => {
+    const id=req.params.id;
+    var ObjectId = require('mongodb').ObjectId; 
+    var o_id = new ObjectId(id);
+    User.findOne({_id:o_id},function(err, result) {
+      if (err) throw err;
+      res.send(result);
+    });
+  })
+   
+
+
+
+
+
+
 
 
 
@@ -65,16 +203,7 @@ MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?r
           });
 
            //Retorna un solo producto dada una id
-        app.get('/usersbyid/:id', (req, res) => {
-          const id=req.params.id;
-          var ObjectId = require('mongodb').ObjectId; 
-          var o_id = new ObjectId(id);
-          db.collection('users').findOne({_id:o_id},function(err, result) {
-            if (err) throw err;
-            console.log(result);
-            res.send(result);
-          });
-        })
+       
 
 
        /*Actualiza usuarios*/
