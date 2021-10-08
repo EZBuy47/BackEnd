@@ -92,7 +92,7 @@ app.get("/auth/google/callback",
   function(req, res) {
     // Successful authentication, redirect secrets.
     setCurrentUserId(req.user._id);
-      if(!req.user.alreadyRegistered)res.redirect(`http://localhost:3000/Register/${req.user._id}`);
+      /*if(!req.user.alreadyRegistered)res.redirect(`http://localhost:3000/Register/${req.user._id}`);*/
        res.redirect(`http://localhost:3000/DashBoard/${req.user._id}`);
       
     console.log("Exito")
@@ -101,12 +101,18 @@ app.get("/auth/google/callback",
 
  app.get('/currentuserid',(req,res)=>{
    res.send(currentUserId);
-   console.log("TEST:"+req.currentUserId);
- })
+})
 
   app.get("/logout", function(req, res){
-    res.redirect("http://localhost:3000/");
-  });
+    req.session.destroy(null);
+    res.clearCookie(this.cookie, { path: '/' });
+    req.logout();
+    req.logOut();
+    setCurrentUserId("");
+    res.send("log out");
+    console.log("asdas");
+    
+  })
 
   app.put('/register/:id',(req,res)=>{
         const id=req.params.id;
@@ -166,34 +172,6 @@ MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?r
     /*Añade un usuario nuevo a la BD*/
     /*Falta ver como hacer datos unicos, pero no se como*/
      
-    app.post('/newuser', (req, res) => {
-        const userObject ={
-        
-            name: req.body.name,
-            identification:req.body.identification,
-            email:req.body.email,
-            password:req.body.password,
-            cellphone:req.body.cellphone,
-            addedDate:req.body.addedDate,
-            lastLoginDate:req.body.addedDate,
-            role:req.body.role,
-            speciality:req.body.speciality,
-            state:req.body.state
-           }
-         ;
-        bcrypt.hash(userObject.password,saltRounds,(err,hash) => {
-            if(err){console.log(err)}
-           userObject.password=hash;
-           
-           usersCollection.insertOne(userObject)
-          .then(result => {
-            console.log(result);
-            console.log("Dato Añadido a mongo  ");
-            res.send('Usuario Creado');
-          })
-          .catch(error => console.error(error))
-})
-        })
         
         /*Devuelve todos los usuarios creados*/
         app.get('/allusers', (req, res) => {
@@ -262,10 +240,7 @@ MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?r
         price:req.body.price,
         description:req.body.description,
         cuantity:req.body.cuantity,
-        soldby:req.body.soldby,
-        boughtby:req.body.boughtby,
-        
-        
+        soldby:req.body.soldby
        }
       productCollection.insertOne(userObject)
       .then(result => {
@@ -294,6 +269,22 @@ MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?r
             res.send(result);
           });
         })
+        //Muestra todos los productos creados por un usuario
+        app.get('/myproducts/:id',(req,res)=>{
+          userID=req.params.id;
+          db.collection('products').find({soldby:userID}).toArray(function(err, result) {
+            if (err) throw err;
+            res.send(result);
+          });
+        })
+
+        app.get('/allotherproducts/:id',(req,res)=>{
+          userID=req.params.id;
+          db.collection('products').find({soldby:{$ne:userID}}).toArray(function(err, result) {
+            if (err) throw err;
+            res.send(result);
+          });
+        })
 
         //Actualiza un productos
         app.put('/updateproduct/:id',(req,res)=>{
@@ -308,8 +299,7 @@ MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?r
               price:req.body.price,
               description:req.body.description,
               cuantity:req.body.cuantity,
-              soldby:req.body.soldby,
-              boughtby:req.body.boughtby,
+              soldby:req.body.soldby
           }}).then(result =>{
             res.send('Update Exitoso');
             console.log("Update Exitoso");
@@ -333,7 +323,32 @@ MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?r
   }).catch(console.error)
 
 
+//CRUD Ventas
+MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?retryWrites=true&w=majority'
+,{ useUnifiedTopology: true }).then(client=>{
+  const db = client.db('ezbuy-database');
+  const salesCollection = db.collection('sales');
+   
+  app.post('/newsale', (req, res) => {
+    const userObject ={
+    
+        productname: req.body.name,
+        productreference:req.body.reference,
+        productprice:req.body.price,
+        soldby:req.body.soldby,
+        boughtby:req.body.boughtby
+       }
+      salesCollection.insertOne(userObject)
+      .then(result => {
+        console.log(result);
+        console.log("Dato Añadido a mongo  ");
+        res.send('Venta Creada');
+      })
+      .catch(error => console.error(error))
 
+    })
+
+  }).catch(console.error)
 
 
 
