@@ -328,7 +328,7 @@ MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?r
 ,{ useUnifiedTopology: true }).then(client=>{
   const db = client.db('ezbuy-database');
   const salesCollection = db.collection('sales');
-   
+   //Creacion Ventas
   app.post('/newsale', (req, res) => {
     const userObject ={
     
@@ -336,7 +336,9 @@ MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?r
         productreference:req.body.reference,
         productprice:req.body.price,
         soldby:req.body.soldby,
-        boughtby:req.body.boughtby
+        boughtby:req.body.boughtby,
+        solddate:req.body.solddate,
+        state:req.body.state
        }
       salesCollection.insertOne(userObject)
       .then(result => {
@@ -348,6 +350,13 @@ MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?r
 
     })
 
+    //Todas Las Ventas
+    app.get('/allsales', (req, res) => {
+      db.collection('sales').find({}).toArray(function(err, result) {
+        if (err) throw err;
+        res.send(result);
+      });
+    })
   }).catch(console.error)
 
 
