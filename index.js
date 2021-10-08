@@ -356,6 +356,24 @@ MongoClient.connect('mongodb+srv://admin:admin@cluster0.bs9d2.mongodb.net/test?r
         if (err) throw err;
         res.send(result);
       });
+    });
+
+    //Compras por un usuario
+    app.get('/mybuys/:id',(req,res)=>{
+      id=req.params.id;
+      db.collection('sales').find({boughtby:id}).toArray(function(err,result){
+        if(err) throw err;
+        res.send(result);
+      })
+    })
+    
+    //Ventas por un usuario
+    app.get('/mysales/:id',(req,res)=>{
+      id=req.params.id;
+      db.collection('sales').find({soldby:id}).toArray(function(err,result){
+        if(err) throw err;
+        res.send(result);
+      })
     })
   }).catch(console.error)
 
