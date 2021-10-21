@@ -13,9 +13,13 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const findOrCreate = require("mongoose-findorcreate");
 app.use(cors());
 app.use(express.json());
-app.listen(3001,()=>{
-    console.log("Welcome");
-});
+const PORT = process.env.PORT || 5000  /*Fall back to port 5000 if process.env.PORT is not set*/
+
+express()
+  .listen(PORT, () => console.log(`Listening on ${ PORT }`))
+
+
+
 require("dotenv").config();
 
 app.use(session({
