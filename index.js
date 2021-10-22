@@ -78,8 +78,12 @@ passport.use(new GoogleStrategy({
   }
 ));
 
-app.get('/', function(req, res, next) {
-  res.render('index', { title: 'Hello World!' });
+app.get('/', (req, res) => {
+   res.json({
+      estado: true,
+      mensaje: 'funciona!',
+      port:PORT
+  })
 });
 
 app.get("/auth/google",
