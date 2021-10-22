@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 5000  /*Fall back to port 5000 if process.env.P
 
 express().listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
-app.use('/', express.static(path.join(__dirname, 'dist')))
+app.get("/")
 
 require("dotenv").config();
 
