@@ -15,10 +15,9 @@ app.use(cors());
 app.use(express.json());
 const PORT = process.env.PORT || 5000  /*Fall back to port 5000 if process.env.PORT is not set*/
 
-express()
-  .listen(PORT, () => console.log(`Listening on ${ PORT }`))
+express().listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
-
+app.use('/', express.static(path.join(__dirname, 'dist')))
 
 require("dotenv").config();
 
