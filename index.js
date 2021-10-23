@@ -12,15 +12,34 @@ const passportLocalMongoose = require("passport-local-mongoose");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const findOrCreate = require("mongoose-findorcreate");
 const path = require('path');
-app.use(cors());
+
 app.use(express.json());
 const PORT = process.env.PORT || 5000  /*Fall back to port 5000 if process.env.PORT is not set*/
 
 express().listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
-app.get("/")
-
 require("dotenv").config();
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  next();
+});
+var corsOptions = {
+  credentials:true,
+  origin: '*', // Reemplazar con dominio
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
+app.use(cors(corsOptions));
+app.get('/', (req, res) => {
+  res.json({
+      estado: true,
+      mensaje: 'funciona!',
+      port:PORT
+  })
+});
+
+
 
 app.use(session({
   secret: "Our little secret.",
